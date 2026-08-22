@@ -36,3 +36,25 @@ Applikationen startades om och inloggning med Test/123 fungerade fortfarande som
 
 Hur det förebyggs i framtida projekt?
 Känsliga uppgifter som lösenord, API-nycklar och anslutningssträngar ska aldrig committas i klartext till versionshantering. De bör hållas i separata, gitignore eller Key Vault.
+
+
+
+Software Supply Chain Failures – Impostor-paket (Swashbukle.AspNetCore)
+
+Vad var problemet?
+Jag hittade ett paket i projektet som hette Swashbukle.AspNetCore (felstavat, saknar bokstaven "c".
+Det riktiga paketet heter Swashbuckle.AspNetCore.
+Det falska paketet hade lagt in egen kod i en funktion som heter `.ToArray()`. Koden skrev ut "VULNERABILITY ENABLED" när jag slog på en viss inställning.
+Det bevisade att paketet gjorde saker jag inte visste om.
+
+Vad kan hända om det utnyttjas?
+Om jag råkar installera fel paket kan koden i det göra vad som helst i min app, till exempel stjäla data eller skapa en bakdörr, utan att jag märker det.
+
+Hur det förebyggs
+Jag bytte ut det felstavade paketet mot rätt paket i Notes.Api.csproj, från Swashbukle.AspNetCore version 2.0.0 till Swashbuckle.AspNetCore version 6.2.3.
+Sen körde jag dotnet restore och dotnet build för att hämta det riktiga paketet.
+
+Verifiering
+Innan jag fixade det skrev appen ut "VULNERABILITY ENABLED" tre gånger när den startade.
+Efter fixen, med samma inställning fortfarande på, skrevs inget meddelande ut.
+Det visar att det falska paketet är helt borta.
