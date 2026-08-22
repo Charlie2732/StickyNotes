@@ -34,8 +34,10 @@ public class NotesController : ControllerBase
         var user = BasicAuthenticationHandler.GetUserFrom(authorizationHeader);
 
         return _database.Notes
-            .FromSqlRaw($"SELECT * FROM Notes WHERE Author='{user.Username}' AND Content LIKE '%{containing}%' ORDER BY Id")
-            .ToArray();
+    .Where(note => note.Author == user.Username)
+    .Where(note => string.IsNullOrEmpty(containing) ? true : note.Content.Contains(containing))
+    .OrderBy(note => note.Id)
+    .ToArray();
     }
 
     /// <summary>
@@ -102,6 +104,13 @@ public class NotesController : ControllerBase
         if (note == null)
         {
             return NotFound($"Note with noteId {noteId} not found");
+        }
+
+        var authorizationHeader = Request.Headers["Authorization"];
+        var user = BasicAuthenticationHandler.GetUserFrom(authorizationHeader);
+        if (note.Author != user.Username)
+        {
+            return Forbid();
         }
 
         note.Content = patchNote.Content;
