@@ -58,3 +58,23 @@ Verifiering
 Innan jag fixade det skrev appen ut "VULNERABILITY ENABLED" tre gånger när den startade.
 Efter fixen, med samma inställning fortfarande på, skrevs inget meddelande ut.
 Det visar att det falska paketet är helt borta.
+
+
+Cross-Site Scripting (XSS) – Visning av note-innehåll
+
+Vad var problemet?
+I script.js, i funktionen noteListItem, användes innerHTML för att visa innehållet i en note content.innerHTML = note.content.
+Det gjorde att webbläsaren tolkade note innehållet som riktig HTML/kod istället för text.
+Jag testade flera payloads (`<script>`, `<svg onload>`) som blockerades av webbläsaren, men <img src=x onerror=alert('XSS')> fungerade och gav en riktig alert ruta med texten XSS.
+
+Vad kan hända om det utnyttjas?
+En angripare kan skapa en note med skadlig kod. När en annan användare öppnar och ser den noten körs koden i deras webbläsare,
+utan att de vet om det. Koden kan till exempel stjäla inloggningsuppgifter, göra saker i appen som om det vore den andra användaren.
+
+Hur det förebyggs
+Jag bytte innerHTML mot innerText i noteListItem funktionen.
+innerText visar allt som ren text, aldrig som körbar kod, oavsett vad innehållet är.
+
+Verifiering
+Innan fixen körde <img src=x onerror=alert('XSS')> en alert-ruta i webbläsaren.
+Efter fixen visas samma text bara som bokstäver på lappen, ingen kod körs längre.
