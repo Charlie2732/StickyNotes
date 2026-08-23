@@ -1,4 +1,26 @@
-﻿SQL Injection – GET /Notes (filter)
+﻿Broken Access Control – PATCH /Notes/{noteId}
+
+Vad var problemet?
+Jag hittade att PATCH metoden i `NotesController.cs inte kollade vem som äger noten.
+GET metoden gjorde redan den kollen, men PATCH tillät vem som helst att ändra i vilken note som helst, oavsett vem som skapat den.
+
+Vad kan hända om det utnyttjas?
+Vem som helst kan ändra i andra användares notes utan att äga dem.
+Det är fel eftersom bara ägaren ska kunna ändra sin egen data.
+
+Hur det förebyggs?
+Jag lade till samma kontroll i PATCH metoden som redan fanns i GET metoden.
+Innan en note uppdateras kollar koden om inloggad användare är samma som notens ägare. Om inte, skickas `403 Forbidden` tillbaka istället för att tillåta ändringen.
+
+Verifiering
+Innan fixen gav PATCH Notes 1, en note jag inte äger, 200 OK.
+Efter fixen gav samma anrop 403 Forbidden.
+Jag testade också PATCH Notes/1001, en note jag äger och den gav fortfarande 200 OK,
+vilket visar att fixen bara stoppar obehörig åtkomst utan att förstöra det som ska fungera som vanligt.
+
+
+
+SQL Injection – GET /Notes (filter)
 
 Vad var problemet?
 Get metoden byggde SQL frågan genom att klistra in användarens sökterm (containing) direkt i en textsträng med FromSqlRaw.
